@@ -1,0 +1,12 @@
+{
+    "name": null,
+    "total_tokens": 214,
+    "history": [
+        {
+            "q": "สวัสดีทดสอบ",
+            "tokens": 214,
+            "model": "inclusionai/ling-3.0-flash-fin:free",
+            "time": 1789284552.6156068
+        }
+    ]
+}

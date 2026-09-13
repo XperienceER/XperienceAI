@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Velora AI — xperience.dev</title>
+  
+  <!-- Tailwind CSS & Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts: Smooth Thai + English -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Markdown Parser, Security Sanitizer & Code Highlight -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+  <style>
+    :root {
+      --accent-from: #6366F1;
+      --accent-to: #8B5CF6;
+      --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    body {
+      font-family: "Inter", "Noto Sans Thai", -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-synthesis: none;
+      background: radial-gradient(circle at 50% -10%, rgba(99, 102, 241, 0.04) 0%, transparent 55%, #040506 100%);
+      background-color: #040506;
+    }
+
+    /* Windows 11 Fluent Acrylic Surfaces */
+    .win-acrylic {
+      background: rgba(10, 12, 20, 0.82);
+      backdrop-filter: blur(32px) saturate(160%);
+      -webkit-backdrop-filter: blur(32px) saturate(160%);
+      border: 1px solid rgba(99, 102, 241, 0.06);
+    }
+    
+    .win-sidebar {
+      background: rgba(6, 8, 14, 0.9);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border-right: 1px solid rgba(99, 102, 241, 0.05);
+    }
+
+    .win-card {
+      background: rgba(99, 102, 241, 0.03);
+      border: 1px solid rgba(99, 102, 241, 0.08);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      transition: border-color 0.3s var(--ease-smooth), background-color 0.3s var(--ease-smooth);
+    }
+
+    /* AI answer: no box, no white background */
+    .ai-answer {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    /* Kill bright backgrounds from markdown / highlight.js */
+    #messages-box .prose,
+    #messages-box .prose p,
+    #messages-box .prose li,
+    #messages-box .prose ul,
+    #messages-box .prose ol {
+      background: transparent !important;
+    }
+    #messages-box .prose blockquote {
+      background: transparent !important;
+      border-left: 3px solid rgba(99, 102, 241, 0.35) !important;
+      color: rgba(165, 180, 252, 0.85) !important;
+    }
+    #messages-box .prose table {
+      background: transparent !important;
+    }
+    #messages-box .prose th,
+    #messages-box .prose td {
+      background: transparent !important;
+      border-color: rgba(99, 102, 241, 0.15) !important;
+    }
+    #messages-box .prose hr {
+      border-color: rgba(99, 102, 241, 0.15) !important;
+      background: transparent !important;
+    }
+    #messages-box .prose code:not(pre code) {
+      background: rgba(99, 102, 241, 0.12) !important;
+      color: #c7d2fe !important;
+      padding: 1px 6px !important;
+      border-radius: 6px !important;
+    }
+    #messages-box .hljs {
+      background: transparent !important;
+      color: #a5b4fc !important;
+    }
+
+    /* Motion System */
+    @keyframes winEntrance {
+      from { opacity: 0; transform: translateY(12px) scale(0.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animate-message {
+      animation: winEntrance 0.32s var(--ease-smooth) forwards;
+    }
+
+    @keyframes modalScale {
+      from { opacity: 0; transform: scale(0.94) translateY(14px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .animate-modal {
+      animation: modalScale 0.28s var(--ease-smooth) forwards;
+    }
+
+    /* Smooth Input Glow */
+    .chat-input-wrapper {
+      background: rgba(10, 12, 22, 0.88);
+      border: 1px solid rgba(99, 102, 241, 0.12);
+      box-shadow: 0 10px 40px -10px rgba(99, 102, 241, 0.08), 0 0 0 1px rgba(99, 102, 241, 0.02);
+      transition: all 0.35s var(--ease-smooth);
+    }
+    .chat-input-wrapper:focus-within {
+      border-color: rgba(99, 102, 241, 0.3);
+      box-shadow: 0 12px 45px -8px rgba(99, 102, 241, 0.15), 0 0 0 2px rgba(99, 102, 241, 0.1);
+      transform: translateY(-1px);
+    }
+
+    /* Premium Button Hover FX */
+    .btn-gradient {
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.85) 0%, rgba(124, 58, 237, 0.85) 100%);
+      transition: all 0.25s var(--ease-smooth);
+    }
+    .btn-gradient:hover:not(:disabled) {
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.95) 0%, rgba(124, 58, 237, 0.95) 100%);
+      transform: translateY(-1px) scale(1.03);
+      box-shadow: 0 6px 20px -3px rgba(139, 92, 246, 0.4);
+    }
+    .btn-gradient:active:not(:disabled) {
+      transform: translateY(1px) scale(0.97);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.12);
+      border-radius: 9999px;
+      transition: background 0.2s ease;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.25); }
+
+    /* Loader Dot Delays */
+    .loader-dot-1 { animation-delay: 0s; }
+    .loader-dot-2 { animation-delay: 0.15s; }
+    .loader-dot-3 { animation-delay: 0.3s; }
+
+    /* ==================== CUSTOM MODEL SELECTOR ==================== */
+    .model-dropdown {
+      position: relative;
+    }
+    .model-dropdown-btn {
+      background: rgba(10, 12, 20, 0.92);
+      border: 1px solid rgba(99, 102, 241, 0.08);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .model-dropdown-btn:hover {
+      border-color: rgba(99, 102, 241, 0.2);
+      background: rgba(12, 14, 24, 0.95);
+    }
+    .model-dropdown-btn.open {
+      border-color: rgba(99, 102, 241, 0.3);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+    }
+    .model-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      min-width: 280px;
+      background: rgba(8, 10, 18, 0.97);
+      backdrop-filter: blur(24px) saturate(150%);
+      -webkit-backdrop-filter: blur(24px) saturate(150%);
+      border: 1px solid rgba(99, 102, 241, 0.1);
+      border-radius: 14px;
+      padding: 6px;
+      max-height: 320px;
+      overflow-y: auto;
+      box-shadow: 0 16px 48px -8px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(99, 102, 241, 0.04);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-6px) scale(0.97);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 200;
+    }
+    .model-dropdown-menu.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+    .model-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid transparent;
+    }
+    .model-option:hover {
+      background: rgba(99, 102, 241, 0.06);
+      border-color: rgba(99, 102, 241, 0.1);
+    }
+    .model-option.selected {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.18);
+    }
+    .model-option .model-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      opacity: 0.8;
+    }
+    .model-option .model-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .model-option .model-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: #e2e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .model-option .model-provider {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-top: 1px;
+    }
+    .model-option .model-badge {
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      flex-shrink: 0;
+      opacity: 0.8;
+    }
+    .model-check {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(99, 102, 241, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+    .model-option.selected .model-check {
+      background: rgba(99, 102, 241, 0.5);
+      border-color: transparent;
+    }
+
+    /* ==================== REASONING DROPDOWN (สไตล์เดียวกับเลือกโมเดล) ==================== */
+    .reasoning-dropdown {
+      position: relative;
+    }
+    .reasoning-dropdown-btn {
+      background: #141624;
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reasoning-dropdown-btn:hover {
+      border-color: rgba(99, 102, 241, 0.5);
+      background: #191c2e;
+    }
+    .reasoning-dropdown-btn.open {
+      border-color: rgba(99, 102, 241, 0.6);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+    }
+    .reasoning-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      min-width: 190px;
+      background: #0d0f1a;
+      backdrop-filter: blur(24px) saturate(150%);
+      -webkit-backdrop-filter: blur(24px) saturate(150%);
+      border: 1px solid rgba(99, 102, 241, 0.1);
+      border-radius: 14px;
+      padding: 6px;
+      box-shadow: 0 16px 48px -8px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(99, 102, 241, 0.04);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-6px) scale(0.97);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 200;
+    }
+    .reasoning-dropdown-menu.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+    .reasoning-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid transparent;
+    }
+    .reasoning-option:hover {
+      background: rgba(99, 102, 241, 0.18);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+    .reasoning-option.selected {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(139, 92, 246, 0.35));
+      border-color: rgba(139, 92, 246, 0.55);
+    }
+    .reasoning-option .reasoning-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      opacity: 1;
+    }
+    .reasoning-option .reasoning-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .reasoning-option .reasoning-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: #e2e8f0;
+      white-space: nowrap;
+    }
+    .reasoning-option .reasoning-desc {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-top: 1px;
+      white-space: nowrap;
+    }
+    .reasoning-option.selected .model-check {
+      background: linear-gradient(135deg, #6366F1, #8B5CF6);
+      border-color: transparent;
+    }
+
+    @keyframes dropdownSlideIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .model-option-animate {
+      animation: dropdownSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+
+    /* Confirm Dialog */
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 400;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease;
+    }
+    .confirm-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .confirm-box {
+      background: rgba(8, 10, 18, 0.98);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(99, 102, 241, 0.12);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 340px;
+      width: 90%;
+      box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.5);
+      transform: scale(0.95);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .confirm-overlay.show .confirm-box {
+      transform: scale(1);
+    }
+
+    /* Code Block */
+    pre {
+      position: relative;
+      background: rgba(6, 8, 14, 0.92) !important;
+      border: 1px solid rgba(99, 102, 241, 0.1);
+      border-radius: 10px;
+      padding: 1rem !important;
+      margin: 0.75rem 0;
+      overflow-x: auto;
+    }
+    code { 
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; 
+      font-size: 0.86rem; 
+      font-feature-settings: "liga" 1, "calt" 1;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      font-size: 0.75rem;
+      background: rgba(99, 102, 241, 0.06);
+      border: 1px solid rgba(99, 102, 241, 0.08);
+      color: #cbd5e1;
+      padding: 3px 9px;
+      border-radius: 6px;
+      transition: all 0.2s var(--ease-smooth);
+    }
+    .copy-btn:hover {
+      color: #b0b8c8;
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.2);
+    }
+
+    /* Softer Prose Text */
+    .prose-invert { --tw-prose-body: #e2e8f0; --tw-prose-headings: #f1f5f9; --tw-prose-lead: #cbd5e1; --tw-prose-links: #c7d2fe; --tw-prose-bold: #f1f5f9; --tw-prose-counters: #cbd5e1; --tw-prose-bullets: #818cf8; --tw-prose-hr: rgba(99,102,241,0.2); --tw-prose-quotes: #e2e8f0; --tw-prose-quote-borders: rgba(99,102,241,0.3); --tw-prose-captions: #cbd5e1; --tw-prose-code: #e0e7ff; --tw-prose-pre-code: #e0e7ff; --tw-prose-pre-bg: rgba(10,12,20,0.9); --tw-prose-th-borders: rgba(99,102,241,0.15); --tw-prose-td-borders: rgba(99,102,241,0.08); }
+
+    /* ==================== CUSTOM LANGUAGE SELECTOR ==================== */
+    .lang-dropdown { position: relative; }
+    .lang-dropdown-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(10, 12, 20, 0.92);
+      border: 1px solid rgba(99, 102, 241, 0.08);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .lang-dropdown-btn:hover {
+      border-color: rgba(99, 102, 241, 0.2);
+      background: rgba(12, 14, 24, 0.95);
+    }
+    .lang-dropdown-btn.open {
+      border-color: rgba(99, 102, 241, 0.3);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+    }
+    .lang-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: rgba(8, 10, 18, 0.97);
+      backdrop-filter: blur(24px) saturate(150%);
+      -webkit-backdrop-filter: blur(24px) saturate(150%);
+      border: 1px solid rgba(99, 102, 241, 0.1);
+      border-radius: 12px;
+      padding: 5px;
+      box-shadow: 0 16px 48px -8px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(99, 102, 241, 0.04);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-4px) scale(0.98);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 100;
+    }
+    .lang-dropdown-menu.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+    .lang-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid transparent;
+    }
+    .lang-option:hover {
+      background: rgba(99, 102, 241, 0.06);
+      border-color: rgba(99, 102, 241, 0.1);
+    }
+    .lang-option.selected {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.18);
+    }
+    .lang-flag {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px solid rgba(99, 102, 241, 0.06);
+      line-height: 1;
+      opacity: 0.9;
+    }
+    .lang-info { flex: 1; min-width: 0; }
+    .lang-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: #e2e8f0;
+    }
+    .lang-native {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-top: 1px;
+    }
+    .lang-check {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(99, 102, 241, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+    .lang-option.selected .lang-check {
+      background: rgba(99, 102, 241, 0.5);
+      border-color: transparent;
+    }
+    @keyframes langOptionIn {
+      from { opacity: 0; transform: translateX(-4px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .lang-option-animate {
+      animation: langOptionIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+  </style>
+</head>
+
+<body class="text-slate-200 flex h-screen overflow-hidden select-none" id="body-theme">
+
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside class="w-72 win-sidebar flex flex-col justify-between hidden md:flex z-20">
+    <div class="p-4 flex flex-col h-full overflow-hidden">
+      
+      <!-- Brand & New Chat -->
+      <div class="flex items-center justify-between px-2 py-2 mb-3">
+        <div class="flex items-center space-x-3">
+          <img src="https://i.ibb.co/7J8MNh9S/Gemini-Generated-Image-ju0cdrju0cdrju0c-removebg-preview.png" alt="Velora AI Logo" class="w-9 h-9 rounded-xl object-cover shadow-lg shadow-indigo-500/10">
+          <div>
+            <span class="font-bold text-sm tracking-wide bg-gradient-to-r from-indigo-300/80 to-violet-400/80 bg-clip-text text-transparent block leading-tight">Velora AI</span>
+            <span class="text-[10px] text-slate-600 font-mono tracking-wider">by xperience.dev</span>
+          </div>
+        </div>
+        <button onclick="createNewChat()" class="p-2 hover:bg-indigo-500/10 active:scale-95 text-slate-400 hover:text-indigo-300 rounded-lg transition duration-200" id="btn-new-chat" title="สนทนาใหม่">
+          <i class="fa-solid fa-pen-to-square text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Section Title -->
+      <div class="px-2 text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+        <span id="txt-history-title">ประวัติการใช้งาน</span>
+        <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-500/8 text-indigo-300/70 border border-indigo-500/12">Cloud/Local</span>
+      </div>
+      
+      <!-- History List -->
+      <div id="chat-history-list" class="flex-1 overflow-y-auto space-y-1.5 pr-1"></div>
+
+      <!-- Quota Status Widget -->
+      <div class="mt-3 p-3.5 win-card rounded-2xl">
+        <div class="flex justify-between items-center text-xs mb-2">
+          <span class="text-slate-300 flex items-center gap-1.5" id="txt-quota-label">
+            <i class="fa-solid fa-microchip text-[11px] text-indigo-400/60"></i> โควตาโทเค่น
+          </span>
+          <span id="token-ratio" class="font-mono text-xs text-indigo-300/60 font-medium">0 / 10,000</span>
+        </div>
+        <div class="w-full bg-indigo-500/8 rounded-full h-1.5 overflow-hidden">
+          <div id="token-progress" class="bg-gradient-to-r from-indigo-500 to-violet-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <div id="cooldown-badge" class="hidden mt-2.5 text-center py-1.5 px-2 rounded-lg bg-rose-500/6 border border-rose-500/10 text-rose-300/70 text-xs font-medium">
+          <i class="fa-regular fa-clock text-xs mr-1 animate-pulse"></i> <span id="txt-cooldown-wait">รอคูลดาวน์:</span> <span id="cooldown-timer" class="text-rose-300/60">12:00:00</span>
+        </div>
+      </div>
+
+      <!-- Settings Button -->
+      <button onclick="openSettingsModal()" class="mt-2.5 flex items-center space-x-2.5 w-full px-3 py-2.5 hover:bg-indigo-500/5 active:scale-[0.99] border border-transparent hover:border-indigo-500/10 text-slate-300 hover:text-slate-100 rounded-xl transition-all duration-200 text-xs">
+        <i class="fa-solid fa-gear text-slate-600"></i>
+        <span id="txt-settings-btn">การตั้งค่าระบบ</span>
+      </button>
+
+      <!-- Creator Credit -->
+      <div class="mt-2 pt-2 border-t border-indigo-500/5 text-center">
+        <a href="https://xperience.dev" target="_blank" rel="noopener noreferrer" class="text-[10px] text-slate-600 hover:text-indigo-400/80 transition-colors duration-200 inline-flex items-center gap-1">
+          <i class="fa-solid fa-code text-[9px]"></i> Crafted by xperience.dev
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN WORKSPACE ==================== -->
+  <main class="flex-1 flex flex-col h-full relative z-10">
+    
+    <!-- Top Bar -->
+    <header class="h-14 win-acrylic border-b border-indigo-500/5 flex items-center justify-between px-6 relative z-30">
+      <div class="flex items-center space-x-3">
+        <span class="text-xs text-slate-300 font-medium" id="txt-model-label">รุ่นโมเดล:</span>
+        <div class="model-dropdown" id="model-dropdown">
+          <button onclick="toggleModelDropdown()" class="model-dropdown-btn flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs text-slate-400 cursor-pointer" id="model-dropdown-btn" tabindex="0">
+            <i class="fa-solid fa-cube text-[11px] text-indigo-400/60"></i>
+            <span id="model-selected-name" class="max-w-[180px] truncate font-medium text-slate-200">inclusionai/ling-3.0-flash-fin</span>
+            <i class="fa-solid fa-chevron-down text-[9px] text-slate-600 ml-auto transition-transform duration-300" id="model-chevron"></i>
+          </button>
+          <div class="model-dropdown-menu" id="model-menu"></div>
+        </div>
+        <div class="flex items-center gap-2 pl-1" id="reasoning-group" title="ระดับการคิดของโมเดล Thinking (low / medium / high / max)">
+          <span class="text-xs text-slate-300 font-medium" id="txt-reasoning-label">Thinking:</span>
+          <div class="reasoning-dropdown" id="reasoning-dropdown">
+            <button onclick="toggleReasoningDropdown()" class="reasoning-dropdown-btn flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs text-slate-100 cursor-pointer" id="reasoning-dropdown-btn" tabindex="0">
+              <i class="fa-solid fa-brain text-[11px] text-indigo-300"></i>
+              <span id="reasoning-selected-name" class="max-w-[120px] truncate font-semibold text-slate-100">Medium</span>
+              <i class="fa-solid fa-chevron-down text-[9px] text-slate-600 ml-auto transition-transform duration-300" id="reasoning-chevron"></i>
+            </button>
+            <div class="reasoning-dropdown-menu" id="reasoning-menu"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <button onclick="clearCurrentChat()" class="text-xs bg-transparent hover:bg-indigo-500/5 active:scale-95 border border-indigo-500/8 hover:border-indigo-500/15 text-slate-500 px-3.5 py-1.5 rounded-lg transition-all duration-200 flex items-center gap-1.5" id="btn-clear-chat">
+          <i class="fa-regular fa-trash-can text-slate-600"></i> <span id="txt-clear-btn">ล้างห้องแชท</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Message Container -->
+    <div id="messages-box" class="flex-1 overflow-y-auto px-6 py-8 space-y-6 select-text relative z-10">
+      <!-- Welcome Screen -->
+      <div id="welcome-screen" class="max-w-xl mx-auto text-center mt-12 mb-6 animate-message">
+        <img src="https://i.ibb.co/7J8MNh9S/Gemini-Generated-Image-ju0cdrju0cdrju0c-removebg-preview.png" alt="Velora AI Logo" class="w-16 h-16 rounded-2xl object-cover mx-auto mb-4 shadow-xl shadow-indigo-500/25">
+        <h2 class="text-xl font-semibold tracking-tight text-slate-100 mb-2" id="txt-welcome-heading">Velora AI พร้อมช่วยเหลือคุณ</h2>
+        <p class="text-slate-300 text-xs leading-relaxed max-w-md mx-auto" id="txt-welcome-desc">ถามข้อสงสัย ให้ช่วยเขียนโปรแกรม ค้นหาไอเดีย หรือวิเคราะห์ข้อความได้อย่างอิสระ</p>
+      </div>
+    </div>
+
+    <!-- Message Input Bar (Smooth 100K Token Box) -->
+    <div class="p-5">
+      <div class="max-w-3xl mx-auto flex flex-col gap-1.5">
+        
+        <div class="chat-input-wrapper rounded-2xl p-2 flex items-end relative">
+          <textarea id="user-input" rows="1" placeholder="ส่งข้อความถาม Velora AI... (Shift + Enter ขึ้นบรรทัดใหม่)" 
+            class="w-full bg-transparent text-slate-100 placeholder-slate-400 text-sm px-3.5 py-2.5 focus:outline-none resize-none max-h-48 leading-relaxed"
+            oninput="handleInput(this)" onkeydown="handleKeyDown(event)"></textarea>
+          
+          <div class="p-1 flex items-center">
+            <button id="send-btn" onclick="sendMessage()" class="p-2 w-9 h-9 btn-gradient disabled:opacity-25 disabled:scale-100 disabled:cursor-not-allowed text-indigo-200/90 rounded-xl flex items-center justify-center shadow-md shadow-indigo-500/5">
+              <i class="fa-solid fa-arrow-up text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Token Counter & Limit (100K Tokens Cap) -->
+        <div class="flex items-center justify-between px-2 text-[11px] text-slate-400">
+          <span id="txt-disclaimer" class="text-slate-600">คำตอบสร้างโดยปัญญาประดิษฐ์ โปรดตรวจสอบข้อมูลสำคัญ</span>
+          <div class="flex items-center gap-1.5 font-mono">
+            <i class="fa-solid fa-cube text-[10px] text-indigo-400/50"></i>
+            <span id="input-token-counter">0 / 100,000 tokens</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ==================== CONFIRM DIALOG ==================== -->
+  <div id="confirm-dialog" class="confirm-overlay" onclick="if(event.target===this)closeConfirm()">
+    <div class="confirm-box text-center">
+      <div class="w-11 h-11 rounded-xl bg-rose-500/8 border border-rose-500/10 flex items-center justify-center mx-auto mb-3">
+        <i class="fa-solid fa-triangle-exclamation text-rose-400/70 text-lg"></i>
+      </div>
+      <h4 id="confirm-title" class="text-sm font-semibold text-slate-300/80 mb-1.5">ยืนยันการลบ</h4>
+      <p id="confirm-desc" class="text-xs text-slate-500 mb-5 leading-relaxed">คุณต้องการลบประวัติแชทนี้ใช่หรือไม่?</p>
+      <div class="flex gap-2.5">
+        <button onclick="closeConfirm()" class="flex-1 px-4 py-2.5 bg-indigo-500/5 hover:bg-indigo-500/8 border border-indigo-500/8 text-slate-500 rounded-xl text-xs font-medium transition-all duration-200" id="confirm-cancel-btn">ยกเลิก</button>
+        <button onclick="confirmAction()" class="flex-1 px-4 py-2.5 bg-rose-500/50 hover:bg-rose-500/70 text-rose-200/80 rounded-xl text-xs font-medium transition-all duration-200 shadow-lg shadow-rose-500/5" id="confirm-ok-btn">ลบ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SETTINGS MODAL ==================== -->
+  <div id="settings-modal" class="fixed inset-0 bg-indigo-950/40 backdrop-blur-md hidden items-center justify-center z-[300] p-4 transition-all" onclick="if(event.target===this)closeSettingsModal()">
+    <div class="win-acrylic border border-indigo-500/10 w-full max-w-md rounded-2xl p-6 shadow-2xl animate-modal">
+      
+      <div class="flex justify-between items-center pb-3 border-b border-indigo-500/8 mb-4">
+        <h3 class="font-medium text-sm text-slate-300/80 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-indigo-400/60"></i> <span id="txt-modal-title">การกำหนดค่าระบบ</span>
+        </h3>
+        <button onclick="closeSettingsModal()" class="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-indigo-300/80 rounded-lg hover:bg-indigo-500/8 transition duration-150">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Language Selection -->
+      <div class="mb-5">
+        <label class="block text-xs font-medium text-slate-300 mb-2" id="txt-lang-label">ภาษาของระบบ (Language)</label>
+        <div class="lang-dropdown" id="lang-dropdown">
+          <button onclick="toggleLangDropdown()" class="lang-dropdown-btn" id="lang-dropdown-btn" tabindex="0">
+            <span class="lang-flag" id="lang-selected-flag">🇹🇭</span>
+            <div class="lang-info">
+              <div class="lang-name" id="lang-selected-name">Thai</div>
+              <div class="lang-native" id="lang-selected-native">ไทย</div>
+            </div>
+            <i class="fa-solid fa-chevron-down text-[9px] text-slate-600 ml-auto transition-transform duration-300" id="lang-chevron"></i>
+          </button>
+          <div class="lang-dropdown-menu" id="lang-menu"></div>
+        </div>
+      </div>
+
+      <!-- Theme Palette -->
+      <div class="mb-5">
+        <label class="block text-xs font-medium text-slate-300 mb-2" id="txt-theme-label">ชุดรูปแบบสี (Theme Palette)</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button onclick="setTheme('default')" class="px-3 py-2.5 bg-indigo-500/5 border border-indigo-500/8 hover:border-indigo-500/20 rounded-xl text-xs text-slate-200 text-center transition">Indigo Violet</button>
+          <button onclick="setTheme('midnight')" class="px-3 py-2.5 bg-indigo-500/5 border border-indigo-500/8 hover:border-indigo-500/20 rounded-xl text-xs text-slate-200 text-center transition">Deep Navy</button>
+          <button onclick="setTheme('pure-black')" class="px-3 py-2.5 bg-indigo-500/5 border border-indigo-500/8 hover:border-indigo-500/20 rounded-xl text-xs text-slate-200 text-center transition">OLED Dark</button>
+        </div>
+      </div>
+
+      <!-- AI Personal Persona -->
+      <div class="mb-5">
+        <label class="block text-xs font-medium text-slate-300 mb-1" id="txt-persona-label">
+          คำแนะนำสำหรับ AI เฉพาะคุณ (Personal Instructions)
+        </label>
+        <p class="text-[11px] text-slate-500 mb-2" id="txt-persona-desc">สอนตัวตนให้ Velora AI เข้าใจสไตล์การตอบของคุณ</p>
+        <textarea id="persona-input" rows="4" class="w-full bg-indigo-500/5 border border-indigo-500/8 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500/25 focus:ring-1 focus:ring-indigo-500/10 transition resize-none placeholder-slate-500" placeholder="..."></textarea>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex justify-between items-center pt-3 border-t border-indigo-500/8">
+        <span class="text-[10px] text-slate-700 font-mono">Velora AI v2.8 (100K Ready)</span>
+        <div class="flex gap-2">
+          <button onclick="closeSettingsModal()" class="px-4 py-2 bg-indigo-500/5 hover:bg-indigo-500/8 border border-indigo-500/8 text-slate-500 rounded-xl text-xs transition duration-150" id="btn-cancel">ยกเลิก</button>
+          <button onclick="saveSettings()" class="px-4 py-2 btn-gradient text-indigo-200/80 rounded-xl text-xs font-medium transition duration-150 shadow shadow-indigo-500/5" id="btn-save">บันทึก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script>
+    const MAX_INPUT_TOKENS = 100000;
+    const CHARS_PER_TOKEN = 2.2;
+    const MAX_INPUT_CHARS = Math.floor(MAX_INPUT_TOKENS * CHARS_PER_TOKEN);
+
+    // ==================== MODEL DEFINITIONS ====================
+    const MODELS = [
+      { id: "inclusionai/ling-3.0-flash-fin:free", name: "Ling 3.0 Flash", provider: "Inclusion AI", icon: "fa-solid fa-bolt", color: "from-amber-500/70 to-orange-500/70", badge: "Fast", badgeColor: "bg-amber-500/8 text-amber-300/70 border border-amber-500/10" },
+      { id: "dots-studio/dots-3-note-preview:free", name: "Dots 3 Note", provider: "Dots Studio", icon: "fa-solid fa-brain", color: "from-sky-500/70 to-blue-500/70", badge: "Smart", badgeColor: "bg-sky-500/8 text-sky-300/70 border border-sky-500/10" },
+      { id: "nvidia/nemotron-3.5-lightning:free", name: "Nemotron 3.5", provider: "NVIDIA", icon: "fa-solid fa-microchip", color: "from-green-500/70 to-emerald-500/70", badge: "Lightning", badgeColor: "bg-green-500/8 text-green-300/70 border border-green-500/10" },
+      { id: "poolside/laguna-s-2.1:free", name: "Laguna S 2.1", provider: "Poolside", icon: "fa-solid fa-water", color: "from-cyan-500/70 to-teal-500/70", badge: "Creative", badgeColor: "bg-cyan-500/8 text-cyan-300/70 border border-cyan-500/10" },
+      { id: "nvidia/nemotron-3-ultra-550b-a55b:free", name: "Nemotron Ultra", provider: "NVIDIA", icon: "fa-solid fa-star", color: "from-violet-500/70 to-purple-500/70", badge: "550B", badgeColor: "bg-violet-500/8 text-violet-300/70 border border-violet-500/10" },
+    ];
+
+    // ==================== REASONING EFFORT (สำหรับโมเดล thinking) ====================
+    const REASONING_EFFORTS = ["low", "medium", "high", "max"];
+    let selectedReasoning = localStorage.getItem('reasoning_effort') || 'medium';
+    if (!REASONING_EFFORTS.includes(selectedReasoning)) selectedReasoning = 'medium';
+
+    // ==================== LANGUAGE DEFINITIONS ====================
+    const LANGUAGES = [
+      { code: "th", name: "Thai", native: "ไทย", flag: "🇹🇭" },
+      { code: "en", name: "English", native: "US", flag: "🇺🇸" },
+    ];
+
+    let selectedModel = MODELS[0];
+    let selectedLang = LANGUAGES.find(l => l.code === (localStorage.getItem('app_lang') || 'th')) || LANGUAGES[0];
+    let modelDropdownOpen = false;
+    let langDropdownOpen = false;
+
+    const translations = {
+      th: {
+        newChat: "การสนทนาใหม่",
+        historyTitle: "ประวัติการใช้งาน",
+        quotaLabel: "โควตาโทเค่น",
+        cooldownWait: "รอคูลดาวน์:",
+        settingsBtn: "การตั้งค่าระบบ",
+        modelLabel: "รุ่นโมเดล:",
+        clearBtn: "ล้างห้องแชท",
+        welcomeHeading: "Velora AI พร้อมช่วยเหลือคุณ",
+        welcomeDesc: "ถามข้อสงสัย ให้ช่วยเขียนโปรแกรม ค้นหาไอเดีย หรือวิเคราะห์ข้อความได้อย่างอิสระ",
+        placeholderInput: "ส่งข้อความถาม Velora AI... (Shift + Enter ขึ้นบรรทัดใหม่)",
+        disclaimer: "คำตอบสร้างโดยปัญญาประดิษฐ์ โปรดตรวจสอบข้อมูลสำคัญ",
+        modalTitle: "การกำหนดค่าระบบ",
+        langLabel: "ภาษาของระบบ (Language)",
+        themeLabel: "ชุดรูปแบบสี (Theme Palette)",
+        personaLabel: "คำแนะนำสำหรับ AI เฉพาะคุณ (Personal Instructions)",
+        personaDesc: "สอนตัวตนให้ Velora AI เข้าใจสไตล์การตอบของคุณ",
+        personaPlaceholder: "เช่น 'ฉันชอบคำตอบกระชับ ตรงประเด็น และมีตัวอย่างโค้ดเสมอ'",
+        btnCancel: "ยกเลิก",
+        btnSave: "บันทึก",
+        copied: "คัดลอกแล้ว!",
+        copy: "คัดลอก",
+        errConnect: "ไม่สามารถติดต่อเซิร์ฟเวอร์ได้",
+        errGeneral: "เกิดข้อผิดพลาด",
+        tokenExceeded: "ข้อความยาวเกินลิมิต 100K โทเค่น!",
+        confirmDeleteTitle: "ยืนยันการลบ",
+        confirmDeleteDesc: "คุณต้องการลบประวัติแชทนี้ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้",
+        confirmClearTitle: "ล้างข้อความ",
+        confirmClearDesc: "ข้อความทั้งหมดในห้องแชทนี้จะถูกล้าง ต้องการดำเนินการต่อ?",
+        btnDelete: "ลบ",
+        btnClear: "ล้าง"
+      },
+      en: {
+        newChat: "New Conversation",
+        historyTitle: "Recent Activity",
+        quotaLabel: "Token Quota",
+        cooldownWait: "Cooldown:",
+        settingsBtn: "System Settings",
+        modelLabel: "Model:",
+        clearBtn: "Clear Chat",
+        welcomeHeading: "Velora AI is ready to assist",
+        welcomeDesc: "Ask questions, generate clean code, brainstorm ideas, or analyze data effortlessly.",
+        placeholderInput: "Message Velora AI... (Shift + Enter for new line)",
+        disclaimer: "AI responses can be inaccurate. Please verify sensitive information.",
+        modalTitle: "System Settings",
+        langLabel: "System Language",
+        themeLabel: "Theme Palette",
+        personaLabel: "Personal Instructions",
+        personaDesc: "Instruct Velora AI on custom response behavior & context.",
+        personaPlaceholder: "e.g. 'I am a developer. Keep responses crisp with production-grade code.'",
+        btnCancel: "Cancel",
+        btnSave: "Save Changes",
+        copied: "Copied!",
+        copy: "Copy",
+        errConnect: "Unable to connect to server",
+        errGeneral: "Error occurred",
+        tokenExceeded: "Input exceeds the 100K token limit!",
+        confirmDeleteTitle: "Confirm Delete",
+        confirmDeleteDesc: "Delete this chat history? This action cannot be undone.",
+        confirmClearTitle: "Clear Messages",
+        confirmClearDesc: "All messages in this chat will be cleared. Continue?",
+        btnDelete: "Delete",
+        btnClear: "Clear"
+      }
+    };
+
+    let currentLang = localStorage.getItem('app_lang') || 'th';
+    let currentSessionId = localStorage.getItem('current_session_id') || Date.now().toString();
+    let chatSessions = {};
+    let isGenerating = false;
+    let pendingConfirmAction = null;
+
+    try {
+      chatSessions = JSON.parse(localStorage.getItem('chat_sessions') || '{}');
+    } catch {
+      chatSessions = {};
+    }
+
+    let userPersona = localStorage.getItem('user_persona') || '';
+
+    if (!chatSessions[currentSessionId]) {
+      chatSessions[currentSessionId] = { title: translations[currentLang].newChat, messages: [] };
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('persona-input').value = userPersona;
+      applyLanguage(currentLang);
+      renderLangDropdown();
+      renderModelDropdown();
+      renderReasoningBar();
+      renderHistoryList();
+      renderCurrentMessages();
+      fetchQuotaStatus();
+      setInterval(fetchQuotaStatus, 30000);
+
+      // Restore saved theme
+      const savedTheme = localStorage.getItem('app_theme') || 'default';
+      setTheme(savedTheme, false);
+
+      // Close dropdowns on outside click
+      document.addEventListener('click', (e) => {
+        if (!document.getElementById('model-dropdown').contains(e.target)) {
+          closeModelDropdown();
+        }
+        if (!document.getElementById('lang-dropdown').contains(e.target)) {
+          closeLangDropdown();
+        }
+        if (!document.getElementById('reasoning-dropdown').contains(e.target)) {
+          closeReasoningDropdown();
+        }
+      });
+
+      // Global keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        // ESC closes modals & dropdowns
+        if (e.key === 'Escape') {
+          if (!document.getElementById('confirm-dialog').classList.contains('show')) {
+            closeSettingsModal();
+          }
+          closeModelDropdown();
+          closeLangDropdown();
+          closeReasoningDropdown();
+        }
+
+        // Ctrl+Enter sends message
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      // Keyboard navigation for model dropdown
+      document.getElementById('model-dropdown').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleModelDropdown();
+        }
+        if (e.key === 'Escape') closeModelDropdown();
+      });
+
+      // Keyboard navigation for language dropdown
+      document.getElementById('lang-dropdown').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleLangDropdown();
+        }
+        if (e.key === 'Escape') closeLangDropdown();
+      });
+
+      // Keyboard navigation for reasoning dropdown
+      document.getElementById('reasoning-dropdown').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleReasoningDropdown();
+        }
+        if (e.key === 'Escape') closeReasoningDropdown();
+      });
+    });
+
+    // ==================== MODEL SELECTOR ====================
+    function renderModelDropdown() {
+      const menu = document.getElementById('model-menu');
+      menu.innerHTML = '';
+      MODELS.forEach((m, i) => {
+        const opt = document.createElement('div');
+        opt.className = `model-option ${m.id === selectedModel.id ? 'selected' : ''} model-option-animate`;
+        opt.style.animationDelay = `${i * 0.04}s`;
+        opt.onclick = (e) => { e.stopPropagation(); selectModel(m); };
+        opt.innerHTML = `
+          <div class="model-icon bg-gradient-to-br ${m.color} text-white/90 shadow-sm">
+            <i class="${m.icon}"></i>
+          </div>
+          <div class="model-info">
+            <div class="model-name">${m.name}</div>
+            <div class="model-provider">${m.provider}</div>
+          </div>
+          <span class="model-badge ${m.badgeColor}">${m.badge}</span>
+          <div class="model-check">
+            ${m.id === selectedModel.id ? '<i class="fa-solid fa-check text-[8px] text-white"></i>' : ''}
+          </div>
+        `;
+        menu.appendChild(opt);
+      });
+      document.getElementById('model-selected-name').textContent = selectedModel.name;
+    }
+
+    function toggleModelDropdown() {
+      modelDropdownOpen ? closeModelDropdown() : openModelDropdown();
+    }
+
+    function openModelDropdown() {
+      modelDropdownOpen = true;
+      document.getElementById('model-menu').classList.add('show');
+      document.getElementById('model-dropdown-btn').classList.add('open');
+      document.getElementById('model-chevron').style.transform = 'rotate(180deg)';
+      renderModelDropdown();
+    }
+
+    function closeModelDropdown() {
+      modelDropdownOpen = false;
+      document.getElementById('model-menu').classList.remove('show');
+      document.getElementById('model-dropdown-btn').classList.remove('open');
+      document.getElementById('model-chevron').style.transform = 'rotate(0deg)';
+    }
+
+    function selectModel(m) {
+      selectedModel = m;
+      closeModelDropdown();
+      renderModelDropdown();
+      updateReasoningVisibility();
+    }
+
+    function getModelValue() {
+      return selectedModel.id;
+    }
+
+    // ==================== REASONING EFFORT DROPDOWN ====================
+    const REASONING_LEVELS = [
+      { id: "low", name: "Low", desc: "ตอบไว คิดน้อย", icon: "fa-solid fa-feather", color: "from-green-500/70 to-emerald-500/70" },
+      { id: "medium", name: "Medium", desc: "สมดุล เร็ว/ลึก", icon: "fa-solid fa-gauge-high", color: "from-sky-500/70 to-blue-500/70" },
+      { id: "high", name: "High", desc: "คิดลึก ตอบช้า", icon: "fa-solid fa-brain", color: "from-violet-500/70 to-purple-500/70" },
+      { id: "max", name: "Max", desc: "ลึกสุด ช้าสุด", icon: "fa-solid fa-rocket", color: "from-amber-500/70 to-orange-500/70" },
+    ];
+    let reasoningDropdownOpen = false;
+
+    function renderReasoningBar() {
+      renderReasoningDropdown();
+    }
+
+    function renderReasoningDropdown() {
+      const menu = document.getElementById('reasoning-menu');
+      if (!menu) return;
+      menu.innerHTML = '';
+      REASONING_LEVELS.forEach((lv, i) => {
+        const opt = document.createElement('div');
+        opt.className = `reasoning-option ${lv.id === selectedReasoning ? 'selected' : ''} model-option-animate`;
+        opt.style.animationDelay = `${i * 0.04}s`;
+        opt.onclick = (e) => { e.stopPropagation(); selectReasoning(lv.id); };
+        opt.innerHTML = `
+          <div class="reasoning-icon bg-gradient-to-br ${lv.color} text-white/90 shadow-sm">
+            <i class="${lv.icon}"></i>
+          </div>
+          <div class="reasoning-info">
+            <div class="reasoning-name">${lv.name}</div>
+            <div class="reasoning-desc">${lv.desc}</div>
+          </div>
+          <div class="model-check">
+            ${lv.id === selectedReasoning ? '<i class="fa-solid fa-check text-[8px] text-white"></i>' : ''}
+          </div>
+        `;
+        menu.appendChild(opt);
+      });
+      const current = REASONING_LEVELS.find(l => l.id === selectedReasoning) || REASONING_LEVELS[1];
+      document.getElementById('reasoning-selected-name').textContent = current.name;
+      updateReasoningVisibility();
+    }
+
+    function toggleReasoningDropdown() {
+      reasoningDropdownOpen ? closeReasoningDropdown() : openReasoningDropdown();
+    }
+
+    function openReasoningDropdown() {
+      reasoningDropdownOpen = true;
+      document.getElementById('reasoning-menu').classList.add('show');
+      document.getElementById('reasoning-dropdown-btn').classList.add('open');
+      document.getElementById('reasoning-chevron').style.transform = 'rotate(180deg)';
+      renderReasoningDropdown();
+    }
+
+    function closeReasoningDropdown() {
+      reasoningDropdownOpen = false;
+      const menu = document.getElementById('reasoning-menu');
+      const btn = document.getElementById('reasoning-dropdown-btn');
+      const chev = document.getElementById('reasoning-chevron');
+      if (menu) menu.classList.remove('show');
+      if (btn) btn.classList.remove('open');
+      if (chev) chev.style.transform = 'rotate(0deg)';
+    }
+
+    function selectReasoning(level) {
+      if (!REASONING_EFFORTS.includes(level)) return;
+      selectedReasoning = level;
+      localStorage.setItem('reasoning_effort', level);
+      closeReasoningDropdown();
+      renderReasoningDropdown();
+    }
+
+    function getReasoningEffort() {
+      return selectedReasoning;
+    }
+
+    function updateReasoningVisibility() {
+      const group = document.getElementById('reasoning-group');
+      if (!group) return;
+      group.style.opacity = '1';
+    }
+
+    // ==================== CONFIRM DIALOG ====================
+    function showConfirm(title, desc, okText, action) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-desc').textContent = desc;
+      document.getElementById('confirm-ok-btn').textContent = okText;
+      document.getElementById('confirm-dialog').classList.add('show');
+      pendingConfirmAction = action;
+    }
+
+    function closeConfirm() {
+      document.getElementById('confirm-dialog').classList.remove('show');
+      pendingConfirmAction = null;
+    }
+
+    function confirmAction() {
+      if (pendingConfirmAction) pendingConfirmAction();
+      closeConfirm();
+    }
+
+    // ==================== LANGUAGE SELECTOR ====================
+    function renderLangDropdown() {
+      const menu = document.getElementById('lang-menu');
+      menu.innerHTML = '';
+      LANGUAGES.forEach((l, i) => {
+        const opt = document.createElement('div');
+        opt.className = `lang-option ${l.code === selectedLang.code ? 'selected' : ''} lang-option-animate`;
+        opt.style.animationDelay = `${i * 0.05}s`;
+        opt.onclick = (e) => { e.stopPropagation(); selectLanguage(l); };
+        opt.innerHTML = `
+          <span class="lang-flag">${l.flag}</span>
+          <div class="lang-info">
+            <div class="lang-name">${l.name}</div>
+            <div class="lang-native">${l.native}</div>
+          </div>
+          <div class="lang-check">
+            ${l.code === selectedLang.code ? '<i class="fa-solid fa-check text-[8px] text-white"></i>' : ''}
+          </div>
+        `;
+        menu.appendChild(opt);
+      });
+      document.getElementById('lang-selected-flag').textContent = selectedLang.flag;
+      document.getElementById('lang-selected-name').textContent = selectedLang.name;
+      document.getElementById('lang-selected-native').textContent = selectedLang.native;
+    }
+
+    function toggleLangDropdown() {
+      langDropdownOpen ? closeLangDropdown() : openLangDropdown();
+    }
+
+    function openLangDropdown() {
+      langDropdownOpen = true;
+      document.getElementById('lang-menu').classList.add('show');
+      document.getElementById('lang-dropdown-btn').classList.add('open');
+      document.getElementById('lang-chevron').style.transform = 'rotate(180deg)';
+      renderLangDropdown();
+    }
+
+    function closeLangDropdown() {
+      langDropdownOpen = false;
+      document.getElementById('lang-menu').classList.remove('show');
+      document.getElementById('lang-dropdown-btn').classList.remove('open');
+      document.getElementById('lang-chevron').style.transform = 'rotate(0deg)';
+    }
+
+    function selectLanguage(l) {
+      selectedLang = l;
+      currentLang = l.code;
+      localStorage.setItem('app_lang', l.code);
+      closeLangDropdown();
+      applyLanguage(l.code);
+      renderLangDropdown();
+      renderModelDropdown();
+    }
+
+    function changeLanguage(lang) {
+      const found = LANGUAGES.find(l => l.code === lang);
+      if (found) selectLanguage(found);
+    }
+
+    function applyLanguage(lang) {
+      const t = translations[lang];
+      document.documentElement.lang = lang;
+      document.getElementById('txt-history-title').innerText = t.historyTitle;
+      document.getElementById('txt-quota-label').innerHTML = `<i class="fa-solid fa-microchip text-[11px] text-violet-400"></i> ${t.quotaLabel}`;
+      document.getElementById('txt-cooldown-wait').innerText = t.cooldownWait;
+      document.getElementById('txt-settings-btn').innerText = t.settingsBtn;
+      document.getElementById('txt-model-label').innerText = t.modelLabel;
+      document.getElementById('txt-clear-btn').innerText = t.clearBtn;
+      document.getElementById('txt-welcome-heading').innerText = t.welcomeHeading;
+      document.getElementById('txt-welcome-desc').innerText = t.welcomeDesc;
+      document.getElementById('user-input').placeholder = t.placeholderInput;
+      document.getElementById('txt-disclaimer').innerText = t.disclaimer;
+      document.getElementById('txt-modal-title').innerText = t.modalTitle;
+      document.getElementById('txt-lang-label').innerText = t.langLabel;
+      document.getElementById('txt-theme-label').innerText = t.themeLabel;
+      document.getElementById('txt-persona-label').innerText = t.personaLabel;
+      document.getElementById('txt-persona-desc').innerText = t.personaDesc;
+      document.getElementById('persona-input').placeholder = t.personaPlaceholder;
+      document.getElementById('btn-cancel').innerText = t.btnCancel;
+      document.getElementById('btn-save').innerText = t.btnSave;
+    }
+
+    // ==================== INPUT & 100K TOKEN LIMIT ====================
+    function handleInput(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 180) + 'px';
+
+      let text = textarea.value;
+      let estimatedTokens = Math.ceil(text.length / CHARS_PER_TOKEN);
+
+      const counter = document.getElementById('input-token-counter');
+
+      if (estimatedTokens > MAX_INPUT_TOKENS) {
+        textarea.value = text.substring(0, MAX_INPUT_CHARS);
+        estimatedTokens = MAX_INPUT_TOKENS;
+        counter.classList.add('text-rose-400');
+        counter.innerText = `${translations[currentLang].tokenExceeded}`;
+      } else {
+        counter.classList.remove('text-rose-400');
+        counter.innerText = `${estimatedTokens.toLocaleString()} / ${MAX_INPUT_TOKENS.toLocaleString()} tokens`;
+      }
+    }
+
+    function handleKeyDown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    // ==================== QUOTA & API ====================
+    async function fetchQuotaStatus() {
+      try {
+        const res = await fetch('/api/status');
+        if (!res.ok) return;
+        const data = await res.json();
+        updateQuotaUI(data.used_tokens, data.max_tokens, data.cooldown_remaining);
+      } catch (err) {
+        console.warn("Quota fetch failed:", err);
+      }
+    }
+
+    function updateQuotaUI(used = 0, max = 10000, cooldownRemaining = 0) {
+      document.getElementById('token-ratio').innerText = `${used.toLocaleString()} / ${max.toLocaleString()}`;
+      const percent = Math.min(100, (used / max) * 100);
+      document.getElementById('token-progress').style.width = `${percent}%`;
+
+      const cooldownBadge = document.getElementById('cooldown-badge');
+      const sendBtn = document.getElementById('send-btn');
+
+      if (cooldownRemaining > 0) {
+        cooldownBadge.classList.remove('hidden');
+        sendBtn.disabled = true;
+        const hours = String(Math.floor(cooldownRemaining / 3600)).padStart(2, '0');
+        const minutes = String(Math.floor((cooldownRemaining % 3600) / 60)).padStart(2, '0');
+        const seconds = String(cooldownRemaining % 60).padStart(2, '0');
+        document.getElementById('cooldown-timer').innerText = `${hours}:${minutes}:${seconds}`;
+      } else {
+        cooldownBadge.classList.add('hidden');
+        if (!isGenerating) sendBtn.disabled = false;
+      }
+    }
+
+    async function sendMessage() {
+      if (isGenerating) return;
+      const input = document.getElementById('user-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const model = getModelValue();
+      input.value = '';
+      input.style.height = 'auto';
+      handleInput(input);
+
+      isGenerating = true;
+      document.getElementById('send-btn').disabled = true;
+
+      const welcome = document.getElementById('welcome-screen');
+      if (welcome) welcome.style.display = 'none';
+
+      appendMessage("user", text);
+      const loaderId = appendLoader();
+
+      try {
+        const currentMessages = chatSessions[currentSessionId].messages
+          .filter(m => m.role === 'user' || m.role === 'assistant')
+          .map(m => ({ role: m.role, content: m.content }));
+
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: model,
+            messages: currentMessages,
+            user_persona: userPersona,
+            reasoning_effort: getReasoningEffort()
+          })
+        });
+
+        const data = await response.json();
+        removeLoader(loaderId);
+
+        if (!response.ok) {
+          const t = translations[currentLang];
+          appendMessage("assistant", `⚠️ **${t.errGeneral}**: ${escapeHtml(data.error || t.errConnect)}`);
+          if (data.cooldown_remaining) {
+            updateQuotaUI(10000, 10000, data.cooldown_remaining);
+          }
+          return;
+        }
+
+        appendMessage("assistant", data.content, {
+          tokens: data.tokens_used,
+          time: data.elapsed_time
+        });
+
+        updateQuotaUI(data.total_used, data.max_tokens, data.cooldown_remaining);
+
+      } catch (error) {
+        removeLoader(loaderId);
+        const t = translations[currentLang];
+        appendMessage("assistant", `⚠️ **${t.errGeneral}**: ${escapeHtml(error.message || t.errConnect)}`);
+      } finally {
+        isGenerating = false;
+        document.getElementById('send-btn').disabled = false;
+      }
+    }
+
+    // ==================== RENDERING ====================
+    function appendMessage(role, content, meta = null) {
+      const isUser = role === "user";
+
+      if (isUser && chatSessions[currentSessionId].messages.length === 0) {
+        chatSessions[currentSessionId].title = content.substring(0, 22) + "...";
+        renderHistoryList();
+      }
+
+      chatSessions[currentSessionId].messages.push({ role, content, meta });
+      saveChatSessions();
+
+      renderMessageBubble(role, content, meta);
+    }
+
+    // วาดข้อความลงจออย่างเดียว (ไม่บันทึก) — ใช้ตอนรีเฟรช/สลับห้องแชท ป้องกันข้อความเบิ้ล
+    function renderMessageBubble(role, content, meta = null) {
+      const box = document.getElementById('messages-box');
+      const isUser = role === "user";
+
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `flex ${isUser ? 'justify-end' : 'justify-start'} animate-message`;
+
+      let parsedHTML = '';
+      if (isUser) {
+        parsedHTML = `<p class="whitespace-pre-wrap leading-relaxed">${escapeHtml(content)}</p>`;
+      } else {
+        try {
+          const rawMarkdown = marked.parse(content || '');
+          parsedHTML = DOMPurify.sanitize(rawMarkdown, {
+            ADD_ATTR: ['target', 'rel'],
+            FORBID_TAGS: ['style', 'script', 'iframe', 'object', 'embed']
+          });
+        } catch (err) {
+          parsedHTML = `<p class="whitespace-pre-wrap leading-relaxed">${escapeHtml(content)}</p>`;
+        }
+      }
+
+      let metaBadge = '';
+      if (!isUser && meta) {
+        metaBadge = `
+          <div class="mt-2.5 pt-2 border-t border-indigo-500/8 flex items-center space-x-3 text-[10.5px] text-slate-600 font-mono">
+            <span><i class="fa-solid fa-bolt text-indigo-400/50"></i> ${Number(meta.tokens) || 0} tokens</span>
+            <span><i class="fa-regular fa-clock text-indigo-400/50"></i> ${Number(meta.time) || 0}s</span>
+          </div>
+        `;
+      }
+
+      msgDiv.innerHTML = `
+        <div class="max-w-2xl ${
+          isUser
+            ? 'btn-gradient text-slate-100 rounded-2xl rounded-br-sm px-4 py-2.5 shadow-lg shadow-indigo-500/5'
+            : 'ai-answer text-slate-200 rounded-2xl rounded-bl-sm px-1 py-2 w-full'
+        }">
+          <div class="prose prose-invert max-w-none text-[13.5px] leading-relaxed select-text" style="font-feature-settings: 'liga' 1, 'calt' 1; color: ${isUser ? '#eef2ff' : '#e2e8f0'};">${parsedHTML}</div>
+          ${metaBadge}
+        </div>
+      `;
+
+      box.appendChild(msgDiv);
+      box.scrollTop = box.scrollHeight;
+
+      msgDiv.querySelectorAll('pre code').forEach((block) => {
+        try { hljs.highlightElement(block); } catch(e) {}
+        const pre = block.parentElement;
+        if (!pre.querySelector('.copy-btn')) {
+          const copyBtn = document.createElement('button');
+          copyBtn.className = 'copy-btn';
+          copyBtn.innerText = translations[currentLang].copy;
+          copyBtn.onclick = () => {
+            navigator.clipboard.writeText(block.innerText);
+            copyBtn.innerText = translations[currentLang].copied;
+            setTimeout(() => copyBtn.innerText = translations[currentLang].copy, 2000);
+          };
+          pre.appendChild(copyBtn);
+        }
+      });
+    }
+
+    function appendLoader() {
+      const box = document.getElementById('messages-box');
+      const loaderId = 'loader-' + Date.now();
+      const loaderDiv = document.createElement('div');
+      loaderDiv.id = loaderId;
+      loaderDiv.className = 'flex justify-start animate-message';
+      loaderDiv.innerHTML = `
+        <div class="max-w-2xl ai-answer rounded-2xl rounded-bl-sm px-1 py-2 flex items-center space-x-1.5">
+          <div class="w-2 h-2 rounded-full bg-indigo-400/40 animate-pulse loader-dot-1"></div>
+          <div class="w-2 h-2 rounded-full bg-violet-400/40 animate-pulse loader-dot-2"></div>
+          <div class="w-2 h-2 rounded-full bg-fuchsia-400/40 animate-pulse loader-dot-3"></div>
+        </div>
+      `;
+      box.appendChild(loaderDiv);
+      box.scrollTop = box.scrollHeight;
+      return loaderId;
+    }
+
+    function removeLoader(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // ==================== SESSIONS ====================
+    function saveChatSessions() {
+      try {
+        localStorage.setItem('chat_sessions', JSON.stringify(chatSessions));
+        localStorage.setItem('current_session_id', currentSessionId);
+      } catch (e) {
+        console.error("Storage limit reached:", e);
+      }
+    }
+
+    function createNewChat() {
+      currentSessionId = Date.now().toString();
+      chatSessions[currentSessionId] = { title: translations[currentLang].newChat, messages: [] };
+      saveChatSessions();
+      renderHistoryList();
+      renderCurrentMessages();
+    }
+
+    function switchChat(sessionId) {
+      if (!chatSessions[sessionId]) return;
+      currentSessionId = sessionId;
+      saveChatSessions();
+      renderHistoryList();
+      renderCurrentMessages();
+    }
+
+    function deleteChatSession(sessionId) {
+      if (!chatSessions[sessionId]) return;
+      const t = translations[currentLang];
+      showConfirm(t.confirmDeleteTitle, t.confirmDeleteDesc, t.btnDelete, () => {
+        delete chatSessions[sessionId];
+        if (Object.keys(chatSessions).length === 0) {
+          createNewChat();
+        } else if (currentSessionId === sessionId) {
+          currentSessionId = Object.keys(chatSessions).reverse()[0];
+        }
+        saveChatSessions();
+        renderHistoryList();
+        renderCurrentMessages();
+      });
+    }
+
+    function clearCurrentChat() {
+      if (!chatSessions[currentSessionId]) return;
+      if (chatSessions[currentSessionId].messages.length === 0) return;
+      const t = translations[currentLang];
+      showConfirm(t.confirmClearTitle, t.confirmClearDesc, t.btnClear, () => {
+        chatSessions[currentSessionId].messages = [];
+        saveChatSessions();
+        renderCurrentMessages();
+      });
+    }
+
+    function renderHistoryList() {
+      const list = document.getElementById('chat-history-list');
+      list.innerHTML = '';
+      Object.keys(chatSessions).reverse().forEach(id => {
+        const session = chatSessions[id];
+        const isActive = id === currentSessionId;
+        const item = document.createElement('div');
+        item.className = 'flex items-center group';
+
+        const btn = document.createElement('button');
+        btn.onclick = () => switchChat(id);
+        btn.className = `flex-1 text-left px-3 py-2 rounded-xl text-xs flex items-center transition-all duration-200 ${
+          isActive
+            ? 'bg-indigo-500/15 text-slate-100 font-medium border border-indigo-500/25 shadow-sm'
+            : 'text-slate-300 hover:bg-indigo-500/5 hover:text-slate-100'
+        }`;
+        btn.innerHTML = `
+          <span class="truncate pr-2"><i class="fa-regular fa-comment-dots mr-2 text-[11px] opacity-50"></i>${escapeHtml(session.title || translations[currentLang].newChat)}</span>
+        `;
+
+        const delBtn = document.createElement('button');
+        delBtn.onclick = (e) => { e.stopPropagation(); deleteChatSession(id); };
+        delBtn.className = 'opacity-0 group-hover:opacity-100 p-1.5 ml-1 text-slate-600 hover:text-rose-400/80 hover:bg-rose-500/8 rounded-lg transition-all duration-200';
+        delBtn.title = currentLang === 'th' ? 'ลบประวัติแชทนี้' : 'Delete this chat';
+        delBtn.innerHTML = '<i class="fa-solid fa-trash-can text-[10px]"></i>';
+
+        item.appendChild(btn);
+        item.appendChild(delBtn);
+        list.appendChild(item);
+      });
+    }
+
+    function renderCurrentMessages() {
+      const box = document.getElementById('messages-box');
+      box.innerHTML = '';
+      const messages = chatSessions[currentSessionId]?.messages || [];
+
+      if (messages.length === 0) {
+        box.innerHTML = `
+          <div id="welcome-screen" class="max-w-xl mx-auto text-center mt-12 mb-6 animate-message">
+        <img src="https://i.ibb.co/7J8MNh9S/Gemini-Generated-Image-ju0cdrju0cdrju0c-removebg-preview.png" alt="Velora AI Logo" class="w-16 h-16 rounded-2xl object-cover mx-auto mb-4 shadow-xl shadow-indigo-500/15">
+            <h2 class="text-xl font-semibold tracking-tight text-slate-100 mb-2">${translations[currentLang].welcomeHeading}</h2>
+            <p class="text-slate-300 text-xs leading-relaxed max-w-md mx-auto">${translations[currentLang].welcomeDesc}</p>
+          </div>
+        `;
+      } else {
+        messages.forEach(m => {
+          renderMessageBubble(m.role, m.content, m.meta);
+        });
+      }
+    }
+
+    // ==================== SETTINGS MODAL ====================
+    function openSettingsModal() {
+      const modal = document.getElementById('settings-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+    function closeSettingsModal() {
+      const modal = document.getElementById('settings-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function saveSettings() {
+      userPersona = document.getElementById('persona-input').value.trim();
+      localStorage.setItem('user_persona', userPersona);
+      closeSettingsModal();
+    }
+
+    function setTheme(theme, save = true) {
+      const body = document.getElementById('body-theme');
+      if (theme === 'midnight') {
+        body.style.background = 'radial-gradient(circle at 50% -10%, rgba(30, 41, 59, 0.12) 0%, transparent 55%, #040506 100%)';
+      } else if (theme === 'pure-black') {
+        body.style.background = '#040506';
+      } else {
+        body.style.background = 'radial-gradient(circle at 50% -10%, rgba(99, 102, 241, 0.04) 0%, transparent 55%, #040506 100%)';
+      }
+      body.style.backgroundColor = '#040506';
+      if (save) localStorage.setItem('app_theme', theme);
+    }
+  </script>
+</body>
+</html>
